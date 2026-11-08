@@ -62,8 +62,12 @@ exports.createOrder = async (req, res) => {
             }
         });
 
+        // ส่งสัญญาณบอกร้านค้าว่ามีออเดอร์ใหม่ (ส่งแบบเจาะจง Room ของร้านนั้น)
         const io = req.app.get('io');
-        if (io) { io.emit('new_order', newOrder); }
+        if (io) { 
+            // เปลี่ยนจาก io.emit เป็น io.to(merchantId).emit
+            io.to(merchantId).emit('new_order', newOrder); 
+        }
 
         res.status(201).json({ message: 'สั่งอาหารสำเร็จ', order: newOrder });
     } catch (error) {

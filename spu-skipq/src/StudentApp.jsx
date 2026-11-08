@@ -205,6 +205,12 @@ function StudentApp({ onBack }) {
     }).filter(item => item.qty > 0));
   };
 
+  const updateCartNote = (menuId, noteText) => {
+    setCart(cart.map(item =>
+      item.menuId === menuId ? { ...item, note: noteText } : item
+    ));
+  };
+
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
   const submitOrder = async () => {
@@ -402,6 +408,13 @@ function StudentApp({ onBack }) {
                       <button onClick={() => updateCartQty(menu.id, -1)} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#F3F4F6', border: 'none', cursor: 'pointer' }}>-</button>
                       <span style={{ fontWeight: '500', width: '20px', textAlign: 'center' }}>{inCart.qty}</span>
                       <button onClick={() => updateCartQty(menu.id, 1)} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#7C3AED', color: '#FFF', border: 'none', cursor: 'pointer' }}>+</button>
+                      <input 
+                            type="text" 
+                            placeholder="หมายเหตุ (เช่น ไม่เผ็ด)" 
+                            value={inCart.note || ''} 
+                            onChange={(e) => updateCartNote(menu.id, e.target.value)}
+                            style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #D1D5DB', width: '130px' }}
+                        />
                     </div>
                   ) : (
                     <button onClick={() => addToCart(menu)} style={{ padding: '8px 16px', backgroundColor: '#111827', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>เพิ่ม</button>
@@ -452,6 +465,7 @@ function StudentApp({ onBack }) {
                     {(typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map((item, idx) => (
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '15px' }}>
                         <span>{item.qty}x {item.name || 'เมนู'}</span>
+                        {item.note && <div style={{ fontSize: '13px', color: '#EF4444', marginTop: '2px' }}>* {item.note}</div>}
                       </div>
                     ))}
                   </div>

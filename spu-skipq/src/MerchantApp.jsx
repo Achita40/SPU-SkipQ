@@ -33,14 +33,24 @@ function MerchantApp({ onBack }) {
   useEffect(() => {
     if (!token) return;
     const socket = io('http://localhost:5000');
+
+    // 1. ให้ร้านค้าจอยเข้า Room ตาม ID ของตัวเอง
+    if (merchant && merchant.id) {
+        socket.emit('join', merchant.id);
+    }
+
     socket.on('new_order', (order) => {
-      // เล่นเสียงแจ้งเตือนเมื่อมีออเดอร์ใหม่
-      const audio = new Audio('https://www.soundjay.com/buttons/sounds/bell-ringing-05.mp3');
-      audio.play().catch(e => console.log('Audio play failed:', e));
-      setOrders(prev => [order, ...prev]);
+      // 2. ดักเช็กให้ชัวร์ว่าออเดอร์นี้เป็นของร้านนี้จริงๆ ถึงจะเล่นเสียงและขึ้นจอ
+      if (merchant && order.merchantId === merchant.id) {
+        // เล่นเสียงแจ้งเตือนเมื่อมีออเดอร์ใหม่
+        const audio = new Audio('https://www.soundjay.com/buttons/sounds/bell-ringing-05.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+        setOrders(prev => [order, ...prev]);
+      }
     });
+
     return () => socket.disconnect();
-  }, [token]);
+  }, [token, merchant]); // 3. เพิ่มตัวแปร merchant เข้ามาในนี้ เพื่อให้มีค่า ID ไปใช้เช็กตอนมีออเดอร์เข้า
 
   // ---------------- API Calls ----------------
 
@@ -276,7 +286,14 @@ function MerchantApp({ onBack }) {
 
                   <div style={{ flexGrow: 1, fontSize: '14px', marginBottom: '16px' }}>
                     {(typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map((item, idx) => (
-                      <div key={idx}>{item.qty}x {item.name || menus.find(m => m.id === item.menuId)?.name}</div>
+                      <div key={idx}>{item.qty}x {item.name || menus.find(m => m.id === item.menuId)?.name}
+                      {/* แจ้งเตือนหมายเหตุให้ร้านค้าเห็นชัดๆ */}
+                          {item.note && (
+                              <div style={{ fontSize: '13px', color: '#EF4444', marginLeft: '20px', marginTop: '2px', fontWeight: '600' }}>
+                                  * {item.note}
+                              </div>
+                          )}
+                      </div>
                     ))}
                   </div>
                   
